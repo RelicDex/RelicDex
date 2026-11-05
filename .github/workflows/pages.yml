@@ -1,4 +1,4 @@
-name: Publish RelicDex — complete PJR legendary sprite integration
+name: Publish Pokémon Relics Ultimate — 450-species public RelicDex
 on:
   push:
     branches: [main]
@@ -177,6 +177,33 @@ jobs:
           test -f _site/pru/index.html
           test -f _site/pru/about/index.html
           test -f _site/pru/media/title-screen.png
+      - name: Publish current PRU 450 RelicDex with trainer teams
+        run: |
+          python3 - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+          parts = sorted(Path('public/source').glob('part-*.txt'))
+          assert len(parts) == 13, f'Expected 13 PRU Job 15 HTML fragments; found {len(parts)}'
+          source = ''.join(p.read_text(encoding='utf-8') for p in parts)
+          assert source.lower().count('</body>') == 1
+          m = re.search(r'<script id="data" type="application/json">(.+?)</script>', source, re.S)
+          assert m, 'RelicDex dataset missing'
+          dataset = json.loads(m.group(1))
+          assert len(dataset['mons']) == 450, 'Not the current 450-species RelicDex'
+          teams = Path('public/trainer_data.js').read_text(encoding='utf-8')
+          patch = Path('public/public_patch.js').read_text(encoding='utf-8')
+          assert 'window.__PRU_PUBLIC_TRAINERS=' in teams
+          assert 'Every Pokémon used across recorded battles' in patch
+          assert '</script>' not in teams and '</script>' not in patch
+          addon = '<script>\n' + teams + '\n</script><script>\n' + patch + '\n</script>'
+          html = source.replace('</body>', addon + '</body>')
+          output = Path('_site/index.html')
+          output.parent.mkdir(parents=True, exist_ok=True)
+          output.write_text(html, encoding='utf-8')
+          assert output.stat().st_size > 6_000_000
+          print(f'Published 450 Pokémon, current front sprites and public trainer guide ({output.stat().st_size} bytes)')
+          PY
       - name: Attempt one-time GitHub Pages activation
         run: |
           gh api -X POST "repos/${GITHUB_REPOSITORY}/pages" -f build_type=workflow || echo "Pages may need enabling once under Settings > Pages > Source: GitHub Actions."
