@@ -193,10 +193,24 @@ jobs:
           assert len(dataset['mons']) == 450, 'Not the current 450-species RelicDex'
           teams = Path('public/trainer_data.js').read_text(encoding='utf-8')
           patch = Path('public/public_patch.js').read_text(encoding='utf-8')
+          visual_paths = [
+              'public/visual_pokemon.js',
+              'public/visual_trainers_1.js',
+              'public/visual_trainers_2.js',
+              'public/visual_trainers_3.js',
+              'public/visual_ritual.js',
+          ]
+          visuals = [Path(p).read_text(encoding='utf-8') for p in visual_paths]
+          processing = Path('public/visual_processing.js').read_text(encoding='utf-8')
           assert 'window.__PRU_PUBLIC_TRAINERS=' in teams
           assert 'Every Pokémon used across recorded battles' in patch
-          assert '</script>' not in teams and '</script>' not in patch
-          addon = '<script>\n' + teams + '\n</script><script>\n' + patch + '\n</script>'
+          assert 'Official PRU download coming soon' in patch
+          assert 'View PRU game releases' not in patch
+          assert 'window.__PRU_VISUAL_POKEMON=' in visuals[0]
+          assert 'window.__PRU_ENEMY_ONLY_ART' in processing
+          assert all('</script>' not in x for x in [teams, *visuals, patch, processing])
+          chunks = [teams, *visuals, patch, processing]
+          addon = ''.join('<script>\n' + chunk + '\n</script>' for chunk in chunks)
           html = source.replace('</body>', addon + '</body>')
           output = Path('_site/index.html')
           output.parent.mkdir(parents=True, exist_ok=True)
