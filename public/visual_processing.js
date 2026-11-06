@@ -66,21 +66,30 @@ function convert(uri, options = {}) {
   return promise;
 }
 const byName = new Map(mons.map(m => [m.name, m]));
-const special = new Set(["Rayquaza","Groudon","Kyogre"]);
+const special = new Set(["Charaxis","Rayquaza","Groudon","Kyogre"]);
 const corrected = [];
 for (const [name, uri] of Object.entries(assets.pokemon)) {
   const mon = byName.get(name);
   if (!mon) {console.warn("Missing expected PRU Dex species",name);continue;}
   mon.image = uri; mon.battleSprite = uri;
-  mon.spriteSource = "Verified PRU game source: " + assets.sources[name];
-  mon.frontSpriteSourcePNG = assets.sources[name];
-  mon.frontSpriteGitHub = "https://github.com/jamesthoward2112-tech/Pokemon-Relics-Ultimate/blob/main/" + assets.sources[name];
+  const sourcePath = assets.sources[name];
+  const githubSource = sourcePath.startsWith("graphics/");
+  mon.spriteSource = (githubSource ? "Verified PRU game source: " : "User-approved custom artwork: ") + sourcePath;
+  mon.frontSpriteSourcePNG = sourcePath;
+  if (githubSource) mon.frontSpriteGitHub = "https://github.com/jamesthoward2112-tech/Pokemon-Relics-Ultimate/blob/main/" + sourcePath;
+  else delete mon.frontSpriteGitHub;
   mon.frontVersion = "RelicDex correction — game source art / 6 Nov 2026";
   delete mon.frontSpriteSha256; // Old Job 15 hash was for the superseded incorrect PNG.
   corrected.push(name);
   const opts = special.has(name) ? {palette:assets.palettes[name]} : {};
   tasks.push(convert(uri,opts).then(png => {mon.image = png; mon.battleSprite = png;}));
 }
+// Steevee and Neevee have one approved battle-only GMax-style Eevee visual.
+// Show it on the first Eevee at Route 3 only; keep the other Eevee ordinary.
+const twins = trainers.find(t => t.name === "Steevee & Neevee");
+const route3 = twins && twins.parties.find(p => p.id === "TRAINER_STEEVE_NEEVEE_ROUTE3_HNS");
+const specialEevee = route3 && route3.pokemon.find(p => p.name === "Eevee");
+if (specialEevee) {specialEevee.visualKey = "Eevee Gmax duo";specialEevee.visualNote = "Trainer-only Gigantamax-style visual; standard Eevee species and mechanics";}
 let portraitCount=0;
 for (const t of trainers) {
   const match = portraits[t.name];
