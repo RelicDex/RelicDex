@@ -53,8 +53,9 @@ let trainerQuery = "", trainerGroup = "All";
 const sectionOrder = ["All", "Johto", "Kanto", "League", "Rivals", "Duos", "Bosses"];
 function pokemonCard(p, compact=false) {
   const mon = byName.get(String(p.name || "").toLowerCase());
-  const art = mon ? img(mon, p.name) : '<div class="missing">No matched sprite</div>';
-  return `<div class="trainer-pokemon"><div class="art">${art}</div><div><span class="name">${esc(p.name)}</span>${p.level ? `<small>Lv ${p.level}</small>` : ""}${!compact && p.ability ? `<small>${esc(p.ability)}</small>` : ""}${!compact && p.item ? `<small>Held: ${esc(p.item)}</small>` : ""}</div></div>`;
+  const battleOnly = p.visualKey && window.__PRU_ENEMY_ONLY_ART && window.__PRU_ENEMY_ONLY_ART[p.visualKey];
+  const art = battleOnly ? img({image:battleOnly}, p.name + " trainer-only appearance") : mon ? img(mon, p.name) : '<div class="missing">No matched sprite</div>';
+  return `<div class="trainer-pokemon"><div class="art">${art}</div><div><span class="name">${esc(p.name)}</span>${p.level ? `<small>Lv ${p.level}</small>` : ""}${!compact && p.ability ? `<small>${esc(p.ability)}</small>` : ""}${!compact && p.item ? `<small>Held: ${esc(p.item)}</small>` : ""}${p.visualKey ? '<small>Trainer-only battle art</small>' : ""}</div></div>`;
 }
 function renderTrainerList() {
  const list = trainers.filter(t => (trainerGroup === "All" || t.category === trainerGroup) &&
@@ -105,7 +106,7 @@ openTrainer = function(t) {
  `<div class="detailheader"><div class="detailhero">${img(t,t.name)}</div><div class="details-title"><small>${esc(t.category)} · ${esc(t.role)}</small><h2>${esc(t.name)}</h2><span class="tiny">${t.parties.length} recorded battle parties</span></div></div>
  <h3>Trainer's Pokémon</h3>${t.parties.length > 1 ? `<label class="tiny" for="trainerBattle">Choose an encounter</label><select id="trainerBattle" class="trainer-selector">${opts}</select>` : ""}
  ${t.parties.length ? '<div id="trainerTeam"></div>' : '<p class="notes">The exact battle party has not yet been confirmed from the accessible PRU trainer data.</p>'}
- ${unique.size ? `<h3>Every Pokémon used across recorded battles (${unique.size})</h3><div class="trainer-unique">${[...unique.values()].map(p=>pokemonCard({name:p.name},true)).join("")}</div>`:''}
+ ${unique.size ? `<h3>Every Pokémon used across recorded battles (${unique.size})</h3><div class="trainer-unique">${[...unique.values()].map(p=>pokemonCard({name:p.name,visualKey:p.visualKey},true)).join("")}</div>`:''}
  ${t.note ? `<p class="notes">${esc(t.note)}</p>` : ""}`;
  if(t.parties.length){
   setBattle(t,0);
