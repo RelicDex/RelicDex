@@ -1,12 +1,14 @@
-/* Use PRU's approved BYOXYS and black/orange Mega-X-derived Charaxis display art. */
+/* Fallback only: preserve the latest user-approved GMax Charaxis and Library BYOXYS. */
 (() => {
   "use strict";
-  const source = window.__PRU_VISUAL_POKEMON;
-  if (!source || !source.pokemon) return;
-  source.pokemon.Charaxis = "assets/pru-art/dex/charaxis_black_orange.png";
-  source.pokemon.Deoxys = "assets/pru-art/dex/deoxys.png";
-  if (source.sources) {
-    source.sources.Charaxis = "graphics/pokemon/charizard/mega_x/front.png (PRU-derived black/orange recolour)";
-    source.sources.Deoxys = "graphics/pokemon/deoxys/byoxys_anim_front_gba.png";
+  const assets = window.__PRU_VISUAL_POKEMON;
+  if (!assets || !assets.pokemon) return;
+  if (!assets.pokemon.Charaxis) {
+    assets.pokemon.Charaxis = "assets/pru-art/dex/charaxis_black_orange.png";
+    if (assets.sources) assets.sources.Charaxis = "Derived black/orange PRU Mega-X artwork (fallback)";
+  }
+  if (!assets.pokemon.Deoxys) {
+    assets.pokemon.Deoxys = "assets/pru-art/dex/deoxys.png";
+    if (assets.sources) assets.sources.Deoxys = "graphics/pokemon/deoxys/byoxys_anim_front_gba.png";
   }
 })();
