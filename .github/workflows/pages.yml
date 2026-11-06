@@ -202,19 +202,30 @@ jobs:
           ]
           visuals = [Path(p).read_text(encoding='utf-8') for p in visual_paths]
           processing = Path('public/visual_processing.js').read_text(encoding='utf-8')
+          overrides = Path('public/pokemon_overrides.js').read_text(encoding='utf-8')
+          elite18 = Path('public/elite18_gallery.js').read_text(encoding='utf-8')
           assert 'window.__PRU_PUBLIC_TRAINERS=' in teams
           assert 'Every Pokémon used across recorded battles' in patch
           assert 'Official PRU download coming soon' in patch
           assert 'View PRU game releases' not in patch
           assert 'window.__PRU_VISUAL_POKEMON=' in visuals[0]
           assert 'window.__PRU_ENEMY_ONLY_ART' in processing
-          assert all('</script>' not in x for x in [teams, *visuals, patch, processing])
-          chunks = [teams, *visuals, patch, processing]
+          assert all('</script>' not in x for x in [teams, *visuals, overrides, patch, processing, elite18])
+          chunks = [teams, *visuals, overrides, patch, processing, elite18]
           addon = ''.join('<script>\n' + chunk + '\n</script>' for chunk in chunks)
           html = source.replace('</body>', addon + '</body>')
           output = Path('_site/index.html')
           output.parent.mkdir(parents=True, exist_ok=True)
           output.write_text(html, encoding='utf-8')
+          import shutil
+          custom_pngs = sorted(Path('public/assets/pru-art').rglob('*.png'))
+          assert len(custom_pngs) == 6, 'Expected two PRU Dex overrides and four Elite 18 sprite assets'
+          for asset in custom_pngs:
+              destination = Path('_site') / asset.relative_to('public')
+              destination.parent.mkdir(parents=True, exist_ok=True)
+              shutil.copy2(asset, destination)
+          from PIL import Image
+          assert all(Image.open(Path('_site') / asset.relative_to('public')).convert('RGBA').getchannel('A').getextrema()[0] == 0 for asset in custom_pngs)
           assert output.stat().st_size > 6_000_000
           print(f'Published 450 Pokémon, current front sprites and public trainer guide ({output.stat().st_size} bytes)')
           PY
