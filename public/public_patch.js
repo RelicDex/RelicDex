@@ -82,7 +82,7 @@ function renderGameAbout() {
  '<div class="game-feature"><h3>Less busywork, more adventure</h3><p>Convenient move relearning, training support, flexible HM use, new battle moves and other quality-of-life improvements keep the focus on building your team.</p></div>'+
  '<div class="game-feature"><h3>A fan-made adventure</h3><p>Pokémon Relics Ultimate is a fan-created ROM hack, developed with AI assistance, open-source game-development tools and help from the sprite-art community. Thanks to the pokeemerald-expansion project and the creators behind the resources that helped bring PRU to life.</p></div>'+
  '<div class="game-feature"><h3>Explore RelicDex</h3><p>Open Pokémon for the complete Pokédex or Trainers to compare their teams at different points in the story. Some teams and locations may change as new builds are released.</p></div>'+
- '<a class="game-link" target="_blank" rel="noopener noreferrer" href="https://github.com/jamesthoward2112-tech/Pokemon-Relics-Ultimate/releases">View PRU game releases</a>'+
+ '<span class="game-link" style="opacity:.76;cursor:default" aria-label="Official PRU download coming soon">Official PRU download coming soon</span>'+
  '<p class="notes">Pokémon and related trademarks belong to their respective owners. PRU is an independent, unofficial fan project, not endorsed by Nintendo, Game Freak or Creatures.</p>';
 }
 render = function() {
